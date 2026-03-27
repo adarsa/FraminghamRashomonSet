@@ -1,0 +1,5 @@
+{
+    "doctor": ["MAP" ,"totChol", "diabetes_grade"],
+    "patient": [ "cigsPerDay", "BMI"],
+    "admin": ["age", "male"]
+}
