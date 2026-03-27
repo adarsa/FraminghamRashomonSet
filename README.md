@@ -1,6 +1,6 @@
 # Framingham Rashomon Set
 
-This project builds a set of near-optimal decision trees (a Rashomon set) on the Framingham dataset, analyses variability across that set, and provides role-based tree matching for human-readable explanations.
+This project builds a set of near-optimal decision trees (a Rashomon set) on the Framingham dataset, analyses variability across that set, and provides user-based tree matching for human-readable explanations.
 
 ## Project Files
 
