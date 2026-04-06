@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import os
 import pickle   
-
+import hashlib
 from sklearn.tree import DecisionTreeClassifier, _tree
 from sklearn.metrics import roc_auc_score, brier_score_loss
 from sklearn.calibration import calibration_curve
@@ -24,10 +24,23 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 
+def tree_hash(tree):
+    t = tree.tree_
+    payload = np.concatenate([
+        t.feature.astype(np.int64),
+        t.threshold.astype(np.float64).view(np.int64),
+        t.children_left.astype(np.int64),
+        t.children_right.astype(np.int64),
+        t.value.ravel().astype(np.float64).view(np.int64),
+    ])
+    return hashlib.sha256(payload.tobytes()).hexdigest()
+
+
 # Train 1000candidate trees
-n_trees = 1000
+n_trees = 10000
 candidate_trees = []
 candidate_aucs = []
+tree_hashlist = []
 
 for seed in range(n_trees):
     tree = DecisionTreeClassifier(
@@ -41,8 +54,13 @@ for seed in range(n_trees):
     probs = tree.predict_proba(X_test)[:, 1]
     auc = roc_auc_score(y_test, probs)
 
-    candidate_trees.append(tree)
-    candidate_aucs.append(auc)
+    hash = tree_hash(tree)
+    if hash in tree_hashlist:
+        print(f"Duplicate tree skipped: {seed}")
+    else:
+        tree_hashlist.append(hash)
+        candidate_trees.append(tree)
+        candidate_aucs.append(auc)
 
 # Store all candidate trees in data folder
 os.makedirs("data", exist_ok=True)
@@ -58,6 +76,5 @@ best_auc = max(candidate_aucs)
 print(f"Best AUC: {best_auc:.3f}")
 print(f"Saved {len(candidate_trees)} candidate trees to {trees_output_path}")
 print(f"Saved {len(candidate_aucs)} candidate AUCs to {aucs_output_path}")
-
 
 #random forest AUC: 0.693
